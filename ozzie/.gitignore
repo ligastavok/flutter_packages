@@ -1,0 +1,14 @@
+.buildlog
+.dart_tool/
+.DS_Store
+.idea
+.pub/
+.settings/
+coverage/*
+example/ozzie/*
+*.iml
+**/build
+**/packages
+**/pubspec.lock
+**/.packages
+**/flutter_export_environment.sh
