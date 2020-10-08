@@ -1,5 +1,8 @@
 # local_auth
 
+This fork used to fix fingerprint issue on iOS 13 / iOS 14.
+Check fix at [local_auth](https://github.com/flutter/plugins/tree/master/packages/local_auth) then replace dependency
+
 This Flutter plugin provides means to perform local, on-device authentication of
 the user.
 
