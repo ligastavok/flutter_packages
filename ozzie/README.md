@@ -12,6 +12,8 @@ Ozzie is your testing friend. Ozzie will take an screenshot during integration t
 
 Add `ozzie` to your `pubspec.yaml` as a **dev_dependency**:
 
+
+
 ```yaml
 dev_dependencies:
   ozzie: <latest_version_here>
