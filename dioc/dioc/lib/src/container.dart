@@ -14,7 +14,7 @@ class Container {
   Map<Type, Factory> _factories = Map<Type, Factory>();
 
   /// Registers a [creator] that describes how to build an instance of a
-  /// given [type] and optional [name]. The [defaultMode] describe the default 
+  /// given [type] and optional [name]. The [defaultMode] describe the default
   /// behaviour when accessing an instance with get method.
   void register<T>(Creator<T> creator, {String name = null, InjectMode defaultMode = InjectMode.unspecified}) {
     final factory = _getOrCreateFactory<T>(defaultMode);
@@ -29,7 +29,7 @@ class Container {
 
   /// Unregisters all [factories].
   void reset() {
-    _factories = Map<Type,Factory>();
+    _factories = Map<Type, Factory>();
   }
 
   /// Gets the global instance of [type] with an optional [name]. It creates an instance
@@ -49,11 +49,18 @@ class Container {
   }
 
   /// Creates a new instance of [type] through the registered factory. A [creator] name could be precised
-  /// to use specific registered creator. A [mode] can be precised, if not the default registered mode is 
+  /// to use specific registered creator. A [mode] can be precised, if not the default registered mode is
   /// used.
   T get<T>({String name = null, String creator = null, InjectMode mode = InjectMode.unspecified}) {
     final result = this._getFactory<T>();
+
     return result.get(name: name, creator: creator, mode: mode);
+  }
+
+  T safeGet<T>({String name = null, String creator = null, InjectMode mode = InjectMode.unspecified}) {
+    final result = this._getFactory<T>(safeGet: true);
+
+    return result?.get(name: name, creator: creator, mode: mode);
   }
 
   /// A shortcut for get<T> method
@@ -67,14 +74,27 @@ class Container {
     return (map != null) && map.has(creator: creator);
   }
 
+  bool hasAll(List<Type> types, {String creator = null}) {
+    return types.every((t) {
+      final map = _factories[t];
+
+      return (map != null) && map.has(creator: creator);
+    });
+  }
+
   Factory<T> _getOrCreateFactory<T>(InjectMode defaultMode) {
     return this._factories.putIfAbsent(T, () => Factory<T>(this, defaultMode: defaultMode));
   }
 
-  Factory<T> _getFactory<T>() {
+  Factory<T> _getFactory<T>({bool safeGet = false}) {
     Factory<T> factory = this._factories[T];
-    if(factory == null)
-      throw("No registered type '$T'");
+
+    if (factory == null) {
+      if (safeGet) return null;
+
+      throw ("No registered type '$T'");
+    }
+
     return factory;
   }
 }
@@ -100,11 +120,11 @@ class Factory<T> {
   }
 
   T get({String name = null, String creator = null, InjectMode mode = InjectMode.unspecified}) {
-    if(mode == InjectMode.unspecified) {
+    if (mode == InjectMode.unspecified) {
       mode = this.defaultMode;
     }
 
-    if(mode == InjectMode.create) {
+    if (mode == InjectMode.create) {
       return this.create(creator: creator);
     }
 
@@ -119,8 +139,7 @@ class Factory<T> {
   T create({String creator = null}) {
     final builder = _creators[creator];
 
-    if(builder == null)
-      throw("No creator with name '$creator' found for type '$T'");
+    if (builder == null) throw ("No creator with name '$creator' found for type '$T'");
 
     return builder(this._container);
   }
