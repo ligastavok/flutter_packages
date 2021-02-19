@@ -1,7 +1,9 @@
 import 'package:dioc/dioc.dart';
 
 class PartProvider {
-  const PartProvider(this.containerName);
+  const PartProvider(
+    this.containerName,
+  );
 
   final String containerName;
 }
@@ -13,9 +15,9 @@ class Inject {
     this.mode = InjectMode.singleton,
   });
 
-  final String name;
-  final String creator;
-  final InjectMode mode;
+  final String? name;
+  final String? creator;
+  final InjectMode? mode;
 }
 
 class Provide {
@@ -34,11 +36,11 @@ class Provide {
     this.defaultMode = InjectMode.unspecified,
   });
 
-  final String name;
-  final String creator;
+  final String? name;
+  final String? creator;
   final Type abstraction;
   final Type implementation;
-  final InjectMode defaultMode;
+  final InjectMode? defaultMode;
 }
 
 class Bootstrapper {
