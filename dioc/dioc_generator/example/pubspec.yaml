@@ -14,8 +14,8 @@ dependencies:
 
 dev_dependencies:
   # analyzer: ^1.0.0
-  build: ^1.6.3
-  build_runner: ^1.11.5
+  build: ^2.0.0
+  build_runner: ^1.12.1
   # built_value_generator: ^7.0.0
   # pedantic: 1.10.0-nullsafety.3
   # pedantic: 1.10.0-nullsafety.3
