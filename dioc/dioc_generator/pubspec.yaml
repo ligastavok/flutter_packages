@@ -18,7 +18,10 @@ dependencies:
   build_runner: ^1.12.1
   built_collection: ^5.0.0
   dioc:
-    path: ../dioc
+    git:
+      url: https://github.com/ligastavok/flutter_packages.git
+      path: dioc/dioc
+      ref: v1.x
 
 dev_dependencies:
   test: ^1.16.8
