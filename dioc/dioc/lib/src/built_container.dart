@@ -13,8 +13,8 @@ class Inject {
     this.mode = InjectMode.singleton,
   });
 
-  final String name;
-  final String creator;
+  final String? name;
+  final String? creator;
   final InjectMode mode;
 }
 
@@ -34,8 +34,8 @@ class Provide {
     this.defaultMode = InjectMode.unspecified,
   });
 
-  final String name;
-  final String creator;
+  final String? name;
+  final String? creator;
   final Type abstraction;
   final Type implementation;
   final InjectMode defaultMode;

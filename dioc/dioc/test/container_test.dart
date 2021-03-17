@@ -2,13 +2,13 @@ import 'package:dioc/dioc.dart';
 import 'package:test/test.dart';
 
 class A {
-  final String value;
+  final String? value;
 
-  A([String value = null]) : value = value ?? "A";
+  A([String? value = null]) : value = value ?? "A";
 }
 
 class B extends A {
-  B([String value = null]) : super(value ?? "B");
+  B([String? value = null]) : super(value ?? "B");
 }
 
 class C {
@@ -20,7 +20,7 @@ class C {
 void main() {
   group('Registration', () {
 
-    Container container;
+    late Container container;
 
     setUp(() {
       container = Container();
