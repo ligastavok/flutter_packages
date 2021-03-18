@@ -1,13 +1,13 @@
 name: dioc_generator
 description: A generator of code for dioc containers.
-version: 1.0.0-nullsafety.0
+version: 1.0.1
 homepage: https://github.com/aloisdeniel/dioc
 author: Aloïs Deniel <alois.deniel@outlook.com>
 
 publish_to: none
 
 environment:
-  sdk: '>2.12.0-0 <3.0.0'
+  sdk: '>=2.11.0 <3.0.0'
 
 dependencies:
   analyzer: ^1.2.0
