@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #import <LocalAuthentication/LocalAuthentication.h>
@@ -22,10 +22,17 @@
 }
 
 - (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
-  if ([@"authenticateWithBiometrics" isEqualToString:call.method]) {
-    [self authenticateWithBiometrics:call.arguments withFlutterResult:result];
+  if ([@"authenticate" isEqualToString:call.method]) {
+    bool isBiometricOnly = [call.arguments[@"biometricOnly"] boolValue];
+    if (isBiometricOnly) {
+      [self authenticateWithBiometrics:call.arguments withFlutterResult:result];
+    } else {
+      [self authenticate:call.arguments withFlutterResult:result];
+    }
   } else if ([@"getAvailableBiometrics" isEqualToString:call.method]) {
     [self getAvailableBiometrics:result];
+  } else if ([@"isDeviceSupported" isEqualToString:call.method]) {
+    result(@YES);
   } else {
     result(FlutterMethodNotImplemented);
   }
@@ -89,7 +96,6 @@
   }
   result(biometrics);
 }
-
 - (void)authenticateWithBiometrics:(NSDictionary *)arguments
                  withFlutterResult:(FlutterResult)result {
   LAContext *context = [[LAContext alloc] init];
@@ -130,6 +136,44 @@
   }
 }
 
+- (void)authenticate:(NSDictionary *)arguments withFlutterResult:(FlutterResult)result {
+  LAContext *context = [[LAContext alloc] init];
+  NSError *authError = nil;
+  _lastCallArgs = nil;
+  _lastResult = nil;
+  context.localizedFallbackTitle = @"";
+
+  if (@available(iOS 9.0, *)) {
+    if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication error:&authError]) {
+      [context evaluatePolicy:kLAPolicyDeviceOwnerAuthentication
+              localizedReason:arguments[@"localizedReason"]
+                        reply:^(BOOL success, NSError *error) {
+                          if (success) {
+                            result(@YES);
+                          } else {
+                            switch (error.code) {
+                              case LAErrorPasscodeNotSet:
+                              case LAErrorTouchIDNotAvailable:
+                              case LAErrorTouchIDNotEnrolled:
+                              case LAErrorTouchIDLockout:
+                              case LAErrorSystemCancel:
+                                if ([arguments[@"stickyAuth"] boolValue]) {
+                                  self->_lastCallArgs = arguments;
+                                  self->_lastResult = result;
+                                  return;
+                                }
+                            }
+                            result(@NO);
+                          }
+                        }];
+    } else {
+      [self handleErrors:authError flutterArguments:arguments withFlutterResult:result];
+    }
+  } else {
+    // Fallback on earlier versions
+  }
+}
+
 - (void)handleErrors:(NSError *)authError
      flutterArguments:(NSDictionary *)arguments
     withFlutterResult:(FlutterResult)result {
@@ -147,12 +191,11 @@
       errorCode = authError.code == LAErrorPasscodeNotSet ? @"PasscodeNotSet" : @"NotEnrolled";
       break;
     case LAErrorTouchIDLockout:
-      dispatch_async(dispatch_get_main_queue(), ^{
-        [self alertMessage:arguments[@"lockOut"]
-           firstButton:arguments[@"okButton"]
-          flutterResult:result
-        additionalButton:nil];
-      });
+      [self alertMessage:arguments[@"lockOut"]
+               firstButton:arguments[@"okButton"]
+             flutterResult:result
+          additionalButton:nil];
+      return;
   }
   result([FlutterError errorWithCode:errorCode
                              message:authError.localizedDescription
