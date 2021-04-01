@@ -156,6 +156,10 @@
                               case LAErrorTouchIDNotAvailable:
                               case LAErrorTouchIDNotEnrolled:
                               case LAErrorTouchIDLockout:
+                                [self handleErrors:error
+                                     flutterArguments:arguments
+                                    withFlutterResult:result];
+                                return;
                               case LAErrorSystemCancel:
                                 if ([arguments[@"stickyAuth"] boolValue]) {
                                   self->_lastCallArgs = arguments;
@@ -191,10 +195,6 @@
       errorCode = authError.code == LAErrorPasscodeNotSet ? @"PasscodeNotSet" : @"NotEnrolled";
       break;
     case LAErrorTouchIDLockout:
-      [self alertMessage:arguments[@"lockOut"]
-               firstButton:arguments[@"okButton"]
-             flutterResult:result
-          additionalButton:nil];
       return;
   }
   result([FlutterError errorWithCode:errorCode
