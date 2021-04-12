@@ -110,10 +110,10 @@ class BootstrapperGenerator extends Generator {
   Iterable<Method> _generatePartMethod(Iterable<FieldElement> annotatedPartFields, MethodElement method) {
     return annotatedPartFields.where((FieldElement field) {
       // part annotation
-      final DartObject ann = TypeChecker.fromRuntime(PartProvider).firstAnnotationOfExact(field);
+      final DartObject? ann = TypeChecker.fromRuntime(PartProvider).firstAnnotationOfExact(field);
 
       // container name
-      final String annContainerName = ann.getField('containerName')?.toStringValue();
+      final String? annContainerName = ann?.getField('containerName')?.toStringValue();
       if (annContainerName == null) {
         return false;
       }
@@ -128,9 +128,9 @@ class BootstrapperGenerator extends Generator {
       final String fieldPartName = annotatedPartField.name;
 
       // scanning constructor
-      final ClassElement partClass = fieldPartType.element.library.getType(fieldPartClassName);
+      final ClassElement? partClass = fieldPartType.element?.library?.getType(fieldPartClassName);
 
-      final List<AnnotatedElement> partClassProvides = _findAnnotation(partClass, Provide);
+      final List<AnnotatedElement> partClassProvides = (partClass == null) ? <AnnotatedElement>[] : _findAnnotation(partClass, Provide);
 
       // register part container method
       BlockBuilder code = BlockBuilder();
@@ -164,7 +164,7 @@ class BootstrapperGenerator extends Generator {
   }
 
   Method _generateEnvironmentMethod(
-    String name,
+    String? name,
     bool createContainer,
     List<AnnotatedElement> providers, {
     Iterable<Method> partMethodList = const <Method>[],
@@ -196,30 +196,30 @@ class BootstrapperGenerator extends Generator {
 
   Code _generateRegistration(AnnotatedElement provide, int index) {
     final DartObject annotation = provide.annotation.objectValue;
-    String name = annotation.getField('name').toStringValue();
+    String? name = annotation.getField('name')?.toStringValue();
     name = name != null ? ", name: '$name'" : '';
 
-    DartType abstraction = annotation.getField('abstraction').toTypeValue();
-    DartType implementation = annotation.getField('implementation').toTypeValue();
+    DartType? abstraction = annotation.getField('abstraction')?.toTypeValue();
+    DartType? implementation = annotation.getField('implementation')?.toTypeValue();
 
     if (implementation == null) {
       print('annotation = $annotation');
       return Code(
-          '// TODO: Not found implementation of ${name ?? abstraction?.getDisplayString(withNullability: false)}, index of providers = $index');
+          '// TODO: Not found implementation of $name, index of providers = $index');
     }
 
     // Scanning constructor
     final implementationClass =
-        implementation.element.library.getType(implementation.getDisplayString(withNullability: false));
-    final parameters = implementationClass.unnamedConstructor.parameters
+        implementation.element?.library?.getType(implementation.getDisplayString(withNullability: false));
+    final parameters = implementationClass?.unnamedConstructor?.parameters
         .map((c) => _generateParameter(implementationClass, c))
         .join(', ');
 
-    int modeIndex = annotation?.getField('defaultMode')?.getField('index')?.toIntValue() ?? 0;
+    int modeIndex = annotation.getField('defaultMode')?.getField('index')?.toIntValue() ?? 0;
     String defaultMode = InjectMode.values[modeIndex].toString().substring(11);
 
     String reg = '''
-      container.register<${abstraction.getDisplayString(withNullability: false)}>
+      container.register<${abstraction?.getDisplayString(withNullability: false)}>
       ((c) => ${implementation.getDisplayString(withNullability: false)}($parameters)$name,
       defaultMode: InjectMode.$defaultMode);
     ''';
@@ -228,13 +228,13 @@ class BootstrapperGenerator extends Generator {
   }
 
   String _generateParameter(ClassElement implementationClass, ParameterElement c) {
-    FieldElement field = implementationClass.getField(c.name);
-    final injectAnnotation = const TypeChecker.fromRuntime(Inject).firstAnnotationOf(field);
+    FieldElement? field = implementationClass.getField(c.name);
+    final injectAnnotation = field == null ? null : const TypeChecker.fromRuntime(Inject).firstAnnotationOf(field);
 
-    String name = injectAnnotation?.getField('name')?.toStringValue();
+    String? name = injectAnnotation?.getField('name')?.toStringValue();
     name = name != null ? "name: '$name'" : '';
 
-    String creator = injectAnnotation?.getField('creator')?.toStringValue();
+    String? creator = injectAnnotation?.getField('creator')?.toStringValue();
     creator = creator != null ? (name != '' ? ', ' : '') + "creator: '$creator'" : '';
 
     int modeIndex = injectAnnotation?.getField('mode')?.getField('index')?.toIntValue() ?? 0;
