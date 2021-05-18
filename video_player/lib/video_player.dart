@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:meta/meta.dart';
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
+import 'package:video_player_platform_interface/analytic_video_event.dart';
 
 export 'package:video_player_platform_interface/video_player_platform_interface.dart'
     show DurationRange, DataSourceType, VideoFormat, VideoPlayerOptions;
@@ -40,6 +41,7 @@ class VideoPlayerValue {
     this.volume = 1.0,
     this.playbackSpeed = 1.0,
     this.errorDescription,
+    this.analyticsDescription,
   });
 
   /// Returns an instance for a video that hasn't been loaded.
@@ -96,9 +98,16 @@ class VideoPlayerValue {
   /// Indicates whether or not the video has been loaded and is ready to play.
   final bool isInitialized;
 
+  ///
+  final String? analyticsDescription;
+
   /// Indicates whether or not the video is in an error state. If this is true
   /// [errorDescription] should have information about the problem.
   bool get hasError => errorDescription != null;
+
+  /// Indicates whether or not the video is in an error state. If this is true
+  /// [errorDescription] should have information about the problem.
+  bool get hasAnalytics => analyticsDescription != null;
 
   /// Returns [size.width] / [size.height].
   ///
@@ -119,20 +128,20 @@ class VideoPlayerValue {
 
   /// Returns a new instance that has the same values as this current instance,
   /// except for any overrides passed in as arguments to [copyWidth].
-  VideoPlayerValue copyWith({
-    Duration? duration,
-    Size? size,
-    Duration? position,
-    Caption? caption,
-    List<DurationRange>? buffered,
-    bool? isInitialized,
-    bool? isPlaying,
-    bool? isLooping,
-    bool? isBuffering,
-    double? volume,
-    double? playbackSpeed,
-    String? errorDescription,
-  }) {
+  VideoPlayerValue copyWith(
+      {Duration? duration,
+      Size? size,
+      Duration? position,
+      Caption? caption,
+      List<DurationRange>? buffered,
+      bool? isInitialized,
+      bool? isPlaying,
+      bool? isLooping,
+      bool? isBuffering,
+      double? volume,
+      double? playbackSpeed,
+      String? errorDescription,
+      String? analyticsDescription}) {
     return VideoPlayerValue(
       duration: duration ?? this.duration,
       size: size ?? this.size,
@@ -146,6 +155,7 @@ class VideoPlayerValue {
       volume: volume ?? this.volume,
       playbackSpeed: playbackSpeed ?? this.playbackSpeed,
       errorDescription: errorDescription ?? this.errorDescription,
+      analyticsDescription: analyticsDescription,
     );
   }
 
@@ -163,7 +173,8 @@ class VideoPlayerValue {
         'isBuffering: $isBuffering, '
         'volume: $volume, '
         'playbackSpeed: $playbackSpeed, '
-        'errorDescription: $errorDescription)';
+        'errorDescription: $errorDescription)'
+        'analyticsDescription: $analyticsDescription)';
   }
 }
 
@@ -315,6 +326,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         return;
       }
 
+      value = value.copyWith(analyticsDescription: null);
+
       switch (event.eventType) {
         case VideoEventType.initialized:
           value = value.copyWith(
@@ -339,6 +352,11 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           break;
         case VideoEventType.bufferingEnd:
           value = value.copyWith(isBuffering: false);
+          break;
+        case VideoEventType.analytics:
+          value = value.copyWith(
+              analyticsDescription:
+                  (event as AnalyticVideoEvent).analyticsDescription);
           break;
         case VideoEventType.unknown:
           break;

@@ -18,6 +18,7 @@ import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Player.EventListener;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.analytics.AnalyticsListener;
 import com.google.android.exoplayer2.audio.AudioAttributes;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
@@ -174,6 +175,17 @@ final class VideoPlayer {
     surface = new Surface(textureEntry.surfaceTexture());
     exoPlayer.setVideoSurface(surface);
     setAudioAttributes(exoPlayer, options.mixWithOthers);
+
+    exoPlayer.addAnalyticsListener(new AnalyticsListener() {
+      @Override
+      public void onDroppedVideoFrames(EventTime eventTime, int droppedFrames, long elapsedMs) {
+        Map<String, Object> event = new HashMap<>();
+        event.put("event", "analyticsEvent");
+        event.put("description", "DroppedVideoFrames: " + droppedFrames);
+        eventSink.success(event);
+      }
+
+    });
 
     exoPlayer.addListener(
         new EventListener() {

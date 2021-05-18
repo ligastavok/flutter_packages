@@ -8,6 +8,7 @@ import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import 'analytic_video_event.dart';
 import 'messages.dart';
 import 'video_player_platform_interface.dart';
 
@@ -124,6 +125,12 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
           return VideoEvent(eventType: VideoEventType.bufferingStart);
         case 'bufferingEnd':
           return VideoEvent(eventType: VideoEventType.bufferingEnd);
+        case 'analyticsEvent':
+          final String description = map['description'];
+          return AnalyticVideoEvent(
+            eventType: VideoEventType.analytics,
+            analyticsDescription: description,
+          );
         default:
           return VideoEvent(eventType: VideoEventType.unknown);
       }
