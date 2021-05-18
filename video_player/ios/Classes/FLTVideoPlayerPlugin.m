@@ -321,10 +321,13 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     if (height == CGSizeZero.height && width == CGSizeZero.width) {
       return;
     }
+
+    // Section disabled. See: https://github.com/flutter/flutter/issues/48670/
+    //
     // The player may be initialized but still needs to determine the duration.
-    if ([self duration] == 0) {
-      return;
-    }
+    // if ([self duration] == 0) {
+    //   return;
+    // }
 
     _isInitialized = true;
     _eventSink(@{
